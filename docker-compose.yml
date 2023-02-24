@@ -1,0 +1,36 @@
+version: "3.9"
+services:
+  rabbitmq:
+    image: rabbitmq:3.11-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+      - 5672:5672
+      - 15672:15672
+  api:
+    build:
+      context: .
+      dockerfile: ./api/Dockerfile
+    depends_on:
+      - rabbitmq
+    expose:
+      - 80
+    ports:
+      - 80:80
+    volumes:
+      - ./api:/api
+  extractor:
+    build:
+      context: .
+      dockerfile: ./extractor/Dockerfile
+    depends_on:
+      - rabbitmq
+    volumes:
+      - ./extractor:/extractor
+  flashcard_model:
+    build:
+      context: .
+      dockerfile: ./flashcard_model/Dockerfile
+    depends_on:
+      - rabbitmq
+    volumes:
+      - ./flashcard_model:/flashcard_model

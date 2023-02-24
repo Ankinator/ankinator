@@ -1,0 +1,2 @@
+celery==5.2.7
+fastapi[all]==0.92.0
