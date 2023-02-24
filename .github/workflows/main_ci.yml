@@ -1,0 +1,38 @@
+name: CI main branch
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'AN-10'
+
+jobs:
+  continuous_integration:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.10
+    - name: Install dependencies
+      run: |
+        pip install --no-cache-dir -r .github/test_requirements.txt
+    - name: Code style check with flake8
+      run: flake8
+
+    # Install dependencies
+    - name: Install dependencies
+      run: |
+        pip install --no-cache-dir -r api/requirements.txt -r extractor/requirements.txt -r flashcard_model/requirements.txt
+
+    # Run unit tests
+    - name: Run unit tests
+      run: |
+        pytest
+
+    # Build docker images
+    - name: Build docker images
+      run: |
+        docker-compose build
