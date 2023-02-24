@@ -1,9 +1,12 @@
 name: CI Pull Request
 
-on: [pull_request]
+on:
+  pull_request:
+    branches:
+      - 'main'
 
 jobs:
-  continuous_integration:
+  continuous_integration_pr:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
