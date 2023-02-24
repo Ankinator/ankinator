@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - 'main'
-      - 'AN-10'
 
 jobs:
   continuous_integration_main:
