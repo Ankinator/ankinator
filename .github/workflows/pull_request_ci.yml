@@ -53,12 +53,12 @@ jobs:
     - name: Build api image
       if: steps.filter.outputs.api == 'true'
       run: |
-        docker build ./api
+        docker-compose build api
     - name: Build extractor image
       if: steps.filter.outputs.extractor == 'true'
       run: |
-        docker build ./extractor
+        docker-compose build extractor
     - name: Build flashcard_model image
       if: steps.filter.outputs.flashcard_model == 'true'
       run: |
-        docker build ./flashcard_model
+        docker-compose build flashcard_model
