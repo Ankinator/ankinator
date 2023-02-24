@@ -1,0 +1,64 @@
+name: CI Pull Request
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+
+jobs:
+  continuous_integration_pr:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          api:
+            - 'api/**'
+          extractor:
+            - 'extractor/**'
+          flashcard_model:
+            - 'flashcard_model/**'
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        pip install --no-cache-dir -r test_requirements.txt
+    - name: Code style check with flake8
+      run: flake8
+
+    # Install dependencies and run unit tests
+    - name: Install api dependencies and run unit tests
+      if: steps.filter.outputs.api == 'true'
+      run: |
+        pip install --no-cache-dir -r api/requirements.txt
+#        pytest api/
+    - name: Install extractor dependencies and run unit tests
+      if: steps.filter.outputs.extractor == 'true'
+      run: |
+        pip install --no-cache-dir -r extractor/requirements.txt
+#        pytest extractor/
+    - name: Install flashcard_model dependencies and run unit tests
+      if: steps.filter.outputs.flashcard_model == 'true'
+      run: |
+        pip install --no-cache-dir -r flashcard_model/requirements.txt
+#        pytest flashcard_model/
+
+    # Build docker images
+    - name: Build api image
+      if: steps.filter.outputs.api == 'true'
+      run: |
+        docker-compose build api
+    - name: Build extractor image
+      if: steps.filter.outputs.extractor == 'true'
+      run: |
+        docker-compose build extractor
+    - name: Build flashcard_model image
+      if: steps.filter.outputs.flashcard_model == 'true'
+      run: |
+        docker-compose build flashcard_model
