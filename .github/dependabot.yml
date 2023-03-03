@@ -9,15 +9,3 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
-  - package-ecosystem: "pip"
-    directory: "/api"
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "pip"
-    directory: "/extractor"
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "pip"
-    directory: "/flashcard_model"
-    schedule:
-      interval: "weekly"
