@@ -10,14 +10,14 @@ updates:
     schedule:
       interval: "weekly"
   - package-ecosystem: "pip"
-      directory: "/api"
-      schedule:
-        interval: "weekly"
+    directory: "/api"
+    schedule:
+      interval: "weekly"
   - package-ecosystem: "pip"
-      directory: "/extractor"
-      schedule:
-        interval: "weekly"
+    directory: "/extractor"
+    schedule:
+      interval: "weekly"
   - package-ecosystem: "pip"
-      directory: "/flashcard_model"
-      schedule:
-        interval: "weekly"
+    directory: "/flashcard_model"
+    schedule:
+      interval: "weekly"
