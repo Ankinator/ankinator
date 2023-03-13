@@ -1,4 +1,4 @@
 celery==5.2.7
 redis==4.5.1
-fastapi[all]==0.92.0
+fastapi[all]==0.94.0
 python-multipart==0.0.6
