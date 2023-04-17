@@ -1,8 +1,10 @@
+from typing import List, Tuple
+
 import pytesseract
+from PIL.Image import Image
 from pypdfium2 import PdfDocument, PdfPage
 
 NUMBER_OF_TOKENS_TO_RUN_OCR = 20
-PRIMARY_EXTRACTION_BOOST = 1.2
 
 
 def plain_pdf_extraction(pdf_document: PdfDocument) -> [(int, str)]:
@@ -16,20 +18,23 @@ def plain_pdf_extraction(pdf_document: PdfDocument) -> [(int, str)]:
 def extract_text(pdf_file, language: str = "eng"):
     pdf_document = PdfDocument(pdf_file)
     extracted_pages = plain_pdf_extraction(pdf_document)
+    extracted_content: List[Tuple[str, str, Image]] = []
     for page_index, page_text in extracted_pages:
         plain_extraction_text_length = len(page_text.split(" "))
+        page_image = pdf_page_to_image(pdf_document.get_page(page_index))
         if plain_extraction_text_length < NUMBER_OF_TOKENS_TO_RUN_OCR:
-            ocr_text = ocr_extraction(pdf_document.get_page(page_index), language=language)
-            if len(ocr_text.split(" ")) > plain_extraction_text_length * PRIMARY_EXTRACTION_BOOST:
-                extracted_pages[page_index] = (page_index, ocr_text + "OCR")
-            else:
-                extracted_pages[page_index] = (page_index, page_text)
-
-    return extracted_pages
+            ocr_text = ocr_extraction(page_image, language=language)
+            extracted_content.append((page_text, ocr_text, page_image))
+        else:
+            extracted_content.append((page_text, "", page_image))
+    return extracted_content
 
 
-def ocr_extraction(page: PdfPage, language: str = "eng") -> str:
-    bitmap = page.render(scale=2)  # sacle=2 to increase resolution
-    pil_image = bitmap.to_pil()
-    text = pytesseract.image_to_string(pil_image, lang=language)
+def ocr_extraction(page_image: Image, language: str = "eng") -> str:
+    text = pytesseract.image_to_string(page_image, lang=language)
     return text
+
+
+def pdf_page_to_image(page: PdfPage) -> Image:
+    bitmap = page.render(scale=2)  # sacle=2 to increase resolution
+    return bitmap.to_pil()
