@@ -8,4 +8,4 @@ WORKDIR /api
 RUN adduser --system --no-create-home ankinator
 USER ankinator
 
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "80", "--log-level", "debug"]
