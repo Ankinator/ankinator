@@ -1,5 +1,5 @@
 from typing import List, Tuple
-
+from tempfile import SpooledTemporaryFile
 import pytesseract
 from PIL.Image import Image
 from pypdfium2 import PdfDocument, PdfPage
@@ -15,7 +15,7 @@ def plain_pdf_extraction(pdf_document: PdfDocument) -> [(int, str)]:
     return pages
 
 
-def extract_text(pdf_file, language: str = "eng"):
+def extract_text(pdf_file: SpooledTemporaryFile, language: str = "eng"):
     pdf_document = PdfDocument(pdf_file)
     extracted_pages = plain_pdf_extraction(pdf_document)
     extracted_content: List[Tuple[str, str, Image]] = []

@@ -16,12 +16,29 @@ services:
     env_file: .env
     depends_on:
       - redis
+  mongodb:
+    image: mongo:latest
+    container_name: 'mongodb'
+    ports:
+      - 27017:27017
+    env_file: .env
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    ports:
+      - 8081:8081
+    env_file: .env
+    restart: unless-stopped
+    depends_on:
+      - mongodb
   api:
     build:
       context: .
       dockerfile: ./api/Dockerfile
     depends_on:
       - rabbitmq
+      - mongodb
+      - redis
     expose:
       - 80
     ports:

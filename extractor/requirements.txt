@@ -3,3 +3,4 @@ redis==4.5.1
 pytesseract==0.3.10
 pypdfium2==4.1.0
 Pillow==9.4.0
+pymongo==4.3.3
