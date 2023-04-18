@@ -10,7 +10,7 @@ client = MongoClient(mongo_url)
 database = client["ankinator_database"]
 
 demo_user = {
-    "username": "johndoe",
+    "username": "ankinator",
     "full_name": "John Doe",
     "email": "johndoe@example.com",
     "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
@@ -40,7 +40,7 @@ def get_user(username: str):
         return UserInDB(**user)
 
 
-def add_model_result_to_document(document_id: str, result: Tuple[int, List[str]]):
+def add_model_result_to_document(document_id: str, result: List[Tuple[int, List[str]]]):
     user = database["user"].find_one({"model_results": {"$elemMatch": {"document_id": document_id}}})
     if user is not None:
         user = UserInDB(**user)
