@@ -1,4 +1,4 @@
-from fastapi import File, UploadFile, Depends, FastAPI, HTTPException, status
+from fastapi import UploadFile, Depends, FastAPI, HTTPException, status
 from celery import Celery
 from datetime import timedelta
 from typing import Annotated
