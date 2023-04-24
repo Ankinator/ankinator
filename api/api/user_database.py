@@ -19,7 +19,12 @@ demo_user = {
 }
 
 time.sleep(1)
-database["user"].insert_one(demo_user)
+
+existing_user = database["user"].find_one({"username": "ankinator"})
+if existing_user is None:
+    database["user"].insert_one(demo_user)
+
+database["user"].create_index("username", unique=True)
 
 
 class User(BaseModel):
@@ -60,4 +65,4 @@ def create_model_result_placeholder_for_user(username: str) -> str:
 
 
 def save_user(user: UserInDB):
-    database["user"].update_one({"username": user.username}, {"$set": user.dict()})
+    database["user"].update_one(filter={"username": user.username}, update={"$set": user.dict()}, upsert=True)

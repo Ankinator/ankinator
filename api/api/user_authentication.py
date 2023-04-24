@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Annotated
+import random
+import string
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -9,7 +11,7 @@ from pydantic import BaseModel
 
 # to get a string like this run:
 # openssl rand -hex 32
-from api.user_database import get_user, User
+from api.user_database import get_user, User, demo_user, save_user, UserInDB
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
@@ -27,7 +29,7 @@ class TokenData(BaseModel):
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
 def verify_password(plain_password, hashed_password):
@@ -53,6 +55,20 @@ def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+
+def create_session_user():
+    characters = string.ascii_letters + string.digits
+    random_username = ''.join(random.choices(characters, k=20))
+    session_user = UserInDB(**demo_user.copy())
+    session_user.username = random_username
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    print(session_user.username)
+    save_user(session_user)
+    access_token = create_access_token(
+        data={"sub": session_user.username}, expires_delta=access_token_expires
+    )
+    return access_token
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
