@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
 
 from api.user_authentication import Token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, \
-    create_access_token, get_current_active_user
+    create_access_token, get_current_active_user, create_session_user
 from api.user_database import User, create_model_result_placeholder_for_user, get_user
 
 celery_app = Celery('api')
@@ -56,6 +56,12 @@ async def login_for_access_token(
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.post("/session", response_model=Token)
+async def random_user_session():
+    access_token = create_session_user()
     return {"access_token": access_token, "token_type": "bearer"}
 
 
