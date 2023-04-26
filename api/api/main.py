@@ -1,5 +1,4 @@
 from fastapi import UploadFile, Depends, FastAPI, HTTPException, status, Response
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from celery import Celery
 from datetime import timedelta
