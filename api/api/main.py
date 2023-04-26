@@ -1,4 +1,6 @@
-from fastapi import UploadFile, Depends, FastAPI, HTTPException, status
+from fastapi import UploadFile, Depends, FastAPI, HTTPException, status, Response
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from celery import Celery
 from datetime import timedelta
 from typing import Annotated
@@ -13,6 +15,18 @@ celery_app = Celery('api')
 
 app = FastAPI(title="Ankinator", description="Ankinator API", version="0.1", max_request_size=52428800)
 
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def root():
@@ -60,8 +74,9 @@ async def login_for_access_token(
 
 
 @app.post("/session", response_model=Token)
-async def random_user_session():
+async def random_user_session(response: Response):
     access_token = create_session_user()
+    response.headers["Access-Control-Allow-Origin"] = "*"
     return {"access_token": access_token, "token_type": "bearer"}
 
 
