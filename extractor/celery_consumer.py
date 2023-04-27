@@ -1,5 +1,6 @@
 from celery import Celery
 
+from extractor.database_functions import save_extraction_results
 from extractor.pdf_extractor import extract_text
 
 app = Celery('extractor')
@@ -11,9 +12,9 @@ app.conf.accept_content = ["json", "pickle"]
 @app.task(name="extract_text_from_pdf")
 def task_extract_text_from_pdf(document):
     pages = extract_text(document["pdf_file"])
+    save_extraction_results(document["document_id"], pages)
     extraction_result = {
-        "document_id": document["document_id"],
-        "extracted_pages": pages
+        "document_id": document["document_id"]
     }
     app.send_task("generate_flashcards", queue="flashcard_model", routing_key="flashcard_model.task",
                   kwargs={"extraction_result": extraction_result}, serializer="pickle")
