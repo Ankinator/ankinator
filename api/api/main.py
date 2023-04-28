@@ -1,4 +1,5 @@
 from fastapi import UploadFile, Depends, FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from celery import Celery
 from datetime import timedelta
 from typing import Annotated
@@ -12,6 +13,19 @@ from api.user_database import User, create_model_result_placeholder_for_user, ge
 celery_app = Celery('api')
 
 app = FastAPI(title="Ankinator", description="Ankinator API", version="0.1", max_request_size=52428800)
+
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
