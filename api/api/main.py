@@ -1,4 +1,4 @@
-from fastapi import UploadFile, Depends, FastAPI, HTTPException, status, Response
+from fastapi import UploadFile, Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from celery import Celery
 from datetime import timedelta
@@ -74,9 +74,8 @@ async def login_for_access_token(
 
 
 @app.post("/session", response_model=Token)
-async def random_user_session(response: Response):
+async def random_user_session():
     access_token = create_session_user()
-    response.headers["Access-Control-Allow-Origin"] = "*"
     return {"access_token": access_token, "token_type": "bearer"}
 
 
