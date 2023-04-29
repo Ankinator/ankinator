@@ -11,10 +11,12 @@ app.conf.accept_content = ["json", "pickle"]
 
 @app.task(name="extract_text_from_pdf")
 def task_extract_text_from_pdf(document):
-    pages = extract_text(document["pdf_file"])
-    save_extraction_results(document["document_id"], pages)
+    extracted_pages = extract_text(pdf_file=document["pdf_file"], pages_to_extract=document["pages"])
+    save_extraction_results(document["document_id"], extracted_pages)
     extraction_result = {
-        "document_id": document["document_id"]
+        "document_id": document["document_id"],
+        "models": document["models"],
+        "domain": document["domain"]
     }
     app.send_task("generate_flashcards", queue="flashcard_model", routing_key="flashcard_model.task",
                   kwargs={"extraction_result": extraction_result}, serializer="pickle")
