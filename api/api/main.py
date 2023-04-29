@@ -1,8 +1,8 @@
-from fastapi import UploadFile, Depends, FastAPI, HTTPException, status
+from fastapi import UploadFile, Depends, FastAPI, HTTPException, status, Body
 from fastapi.middleware.cors import CORSMiddleware
 from celery import Celery
 from datetime import timedelta
-from typing import Annotated
+from typing import Annotated, List
 
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -34,12 +34,16 @@ async def root():
 
 
 @app.post("/uploadpdf")
-async def upload_pdf_file(file: UploadFile, current_user: Annotated[User, Depends(get_current_active_user)]):
+async def upload_pdf_file(file: UploadFile, current_user: Annotated[User, Depends(get_current_active_user)],
+                          pages: List[int] = Body(None), models: List[str] = Body(None), domain: str = Body(None)):
     pdf_content = await file.read()
     document_id = create_model_result_placeholder_for_user(current_user.username)
     document = {
         "document_id": document_id,
-        "pdf_file": pdf_content
+        "pdf_file": pdf_content,
+        "pages": pages,
+        "models": models,
+        "domain": domain
     }
     celery_app.send_task("extract_text_from_pdf", queue="extractor", routing_key="extract.task",
                          kwargs={"document": document}, serializer="pickle")
