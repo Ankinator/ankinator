@@ -2,7 +2,7 @@ from celery import Celery
 
 from flashcard_model.DemoModel import DemoModel
 from flashcard_model.database_functions import load_extracted_pages
-from flashcard_model.flashcard_model.ChatGPTModel import ChatGPTModel
+from flashcard_model.ChatGPTModel import ChatGPTModel
 
 app = Celery('flashcard_model')
 app.conf.task_default_queue = "flashcard_model"
