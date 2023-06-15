@@ -35,9 +35,16 @@ async def root():
 
 @app.post("/uploadpdf")
 async def upload_pdf_file(file: UploadFile, current_user: Annotated[User, Depends(get_current_active_user)],
-                          pages: List[int] = Body(None), models: List[str] = Body(None), domain: str = Body(None)):
+                          pages: List[str] = Body(None), models: List[str] = Body(None), domain: str = Body(None)):
     pdf_content = await file.read()
     document_id = create_model_result_placeholder_for_user(current_user.username)
+
+    if len(pages) == 1:  # Required for swagger
+        pages = [item.strip() for item in pages[0].split(",")]
+    if len(models) == 1:  # Required for swagger
+        models = [item.strip() for item in models[0].split(",")]
+    pages = [int(i) for i in pages]
+
     document = {
         "document_id": document_id,
         "pdf_file": pdf_content,
