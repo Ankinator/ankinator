@@ -1,5 +1,5 @@
 celery==5.2.7
-redis==4.5.4
+redis==4.5.5
 fastapi[all]==0.97.0
 python-multipart==0.0.6
 cryptography==41.0.1
