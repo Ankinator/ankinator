@@ -1,6 +1,5 @@
 from celery import Celery
 
-from flashcard_model.DemoModel import DemoModel
 from flashcard_model.database_functions import load_extracted_pages
 from flashcard_model.ChatGPTModel import ChatGPTModel
 

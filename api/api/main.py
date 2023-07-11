@@ -38,7 +38,7 @@ async def upload_pdf_file(file: UploadFile, current_user: Annotated[User, Depend
                           pages: List[str] = Body(None), models: List[str] = Body(None), domain: str = Body(None)):
     pdf_content = await file.read()
     document_id = create_model_result_placeholder_for_user(current_user.username)
-    
+
     if pages is not None and (len(pages) == 1):  # Required for swagger
         pages = [item.strip() for item in pages[0].split(",")]
     if models is not None and len(models) == 1:  # Required for swagger
