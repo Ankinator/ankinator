@@ -22,6 +22,13 @@ def add_model_result_to_document(document_id: str, result: List[Tuple[int, List[
         database["user"].update_one({"username": user["username"]}, {"$set": user})
 
 
+def set_document_to_failed(document_id: str):
+    user = database["user"].find_one({"model_results." + document_id: {"$exists": True}})
+    if user is not None:
+        user["model_results"][document_id] = "FAILED"
+        database["user"].update_one({"username": user["username"]}, {"$set": user})
+
+
 def load_extracted_pages(document_id: str) -> List[Tuple[int, str, str, Image]]:
     file_object = grid_fs.get_last_version(filename=document_id)
     result = file_object.read()
