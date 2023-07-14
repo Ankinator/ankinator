@@ -15,7 +15,7 @@ def task_extract_text_from_pdf(document):
     save_extraction_results(document["document_id"], extracted_pages)
     extraction_result = {
         "document_id": document["document_id"],
-        "models": document["models"],
+        "model": document["model"],
         "domain": document["domain"]
     }
     app.send_task("generate_flashcards", queue="flashcard_model", routing_key="flashcard_model.task",
