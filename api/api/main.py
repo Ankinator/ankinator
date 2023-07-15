@@ -1,4 +1,4 @@
-from fastapi import UploadFile, Depends, FastAPI, HTTPException, status, Body
+from fastapi import UploadFile, Depends, FastAPI, HTTPException, status, Body, Response
 from fastapi.middleware.cors import CORSMiddleware
 from celery import Celery
 from datetime import timedelta
@@ -9,6 +9,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from api.user_authentication import Token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, \
     create_access_token, get_current_active_user, create_session_user
 from api.user_database import User, create_model_result_placeholder_for_user, get_user
+from api.extractor_database import load_processed_pdf_document
 
 celery_app = Celery('api')
 
@@ -64,6 +65,20 @@ async def get_flashcard_results(document_id: str, current_user: Annotated[User, 
         return {"model_result": "PENDING"}
     else:
         return db_user.model_results[document_id]
+
+
+@app.get("/resultpdf")
+async def get_flashcard_result_document(document_id: str,
+                                        current_user: Annotated[User, Depends(get_current_active_user)]):
+    db_user = get_user(current_user.username)
+    if db_user.model_results[document_id] is None:
+        return {"model_result": "PENDING"}
+    else:
+        pdf_document = load_processed_pdf_document(document_id)
+
+        response = Response(content=bytes(pdf_document.output()), media_type="application/pdf")
+        response.headers["Content-Disposition"] = f"attachment; filename=result_document_{document_id}.pdf"
+        return response
 
 
 @app.post("/login", response_model=Token)
