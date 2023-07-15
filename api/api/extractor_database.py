@@ -23,7 +23,6 @@ def load_processed_pdf_document(document_id: str) -> fpdf.FPDF:
 
     pdf = FPDF()
     for page_number, pdf_text, ocr_text, extracted_image in extracted_pages:
-        print(extracted_image)
         pdf.add_page(format=(extracted_image.width, extracted_image.height))
         pdf.image(extracted_image, 0, 0, pdf.w, pdf.h)
 
