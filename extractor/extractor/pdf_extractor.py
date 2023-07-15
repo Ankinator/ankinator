@@ -23,7 +23,7 @@ def extract_text(pdf_file: SpooledTemporaryFile, pages_to_extract: List[int], la
     for page_index, page_text in extracted_pages:
         if pages_to_extract is None or page_index in pages_to_extract:  # assuming first page is 0
             plain_extraction_text_length = len(page_text.split(" "))
-            page_image = pdf_page_to_image(pdf_document.get_page(page_index))
+            page_image = pdf_page_to_image(pdf_document.get_page(page_index-1))
             if plain_extraction_text_length < NUMBER_OF_TOKENS_TO_RUN_OCR:
                 ocr_text = ocr_extraction(page_image, language=language)
                 extracted_content.append((page_index, page_text, ocr_text, page_image))
