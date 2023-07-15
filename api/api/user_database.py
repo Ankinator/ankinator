@@ -46,15 +46,6 @@ def get_user(username: str):
         return UserInDB(**user)
 
 
-def add_model_result_to_document(document_id: str, result: List[Tuple[int, List[str]]]):
-    user = database["user"].find_one({"model_results": {"$elemMatch": {"document_id": document_id}}})
-    if user is not None:
-        user = UserInDB(**user)
-        if document_id in user.model_results:
-            user.model_results[document_id] = result
-            save_user(user)
-
-
 def create_model_result_placeholder_for_user(username: str) -> str:
     user = database["user"].find_one({"username": username})
     if user is not None:
