@@ -15,10 +15,13 @@ grid_fs = GridFS(database)
 
 # Add results to document with passed document_id
 # Results is as list of tuples. Each tuple contains the page number (int) and the generated questions (List[str])
-def add_model_result_to_document(document_id: str, result: List[Tuple[int, List[str]]]):
+def add_model_result_to_document(document_id: str, model_name: str, result: List[Tuple[int, List[str]]]):
     user = database["user"].find_one({"model_results." + document_id: {"$exists": True}})
     if user is not None:
-        user["model_results"][document_id] = result
+        user["model_results"][document_id] = {
+            "model_name": model_name,
+            "model_result": result
+        }
         database["user"].update_one({"username": user["username"]}, {"$set": user})
 
 
