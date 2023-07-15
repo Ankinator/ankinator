@@ -9,7 +9,7 @@ NUMBER_OF_TOKENS_TO_RUN_OCR = 20
 
 def plain_pdf_extraction(pdf_document: PdfDocument) -> [(int, str)]:
     pages = []
-    for page_index, page_content in enumerate(pdf_document, 0):
+    for page_index, page_content in enumerate(pdf_document, 1):
         page_text: str = page_content.get_textpage().get_text_range()
         pages.append((page_index, page_text))
     return pages
