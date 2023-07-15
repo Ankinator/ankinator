@@ -63,7 +63,7 @@ async def get_flashcard_results(document_id: str, current_user: Annotated[User, 
     if db_user.model_results[document_id] is None:
         return {"model_result": "PENDING"}
     else:
-        return {"model_result": db_user.model_results[document_id]}
+        return db_user.model_results[document_id]
 
 
 @app.post("/login", response_model=Token)

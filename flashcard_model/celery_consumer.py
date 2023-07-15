@@ -31,7 +31,7 @@ def generate_flashcard(extraction_result):
         model_function = model_functions.get(model_name)
         if model_function:
             model_instance = model_function()
-            model_instance(extraction_result['document_id'], extracted_pages)
+            model_instance(extraction_result['document_id'], model_name, extracted_pages)
             print(f"Document {extraction_result['document_id']} flashcard generation finished")
         else:
             set_document_to_failed(extraction_result['document_id'])

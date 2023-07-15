@@ -1,5 +1,5 @@
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Union
 from pymongo import MongoClient
 from pydantic import BaseModel
 import uuid
@@ -32,7 +32,8 @@ class User(BaseModel):
     email: str | None = None
     full_name: str | None = None
     disabled: bool | None = None
-    model_results: dict[str, List[Tuple[int, List[str]]] | None | str] = {}
+    # dict[document_id, dict[model_name, List[Tuple[page_number, list of questions]]]]
+    model_results: dict[str, Union[dict[str, Union[List[Tuple[int, List[str]]] | str]] | None | str]] = {}
 
 
 class UserInDB(User):
