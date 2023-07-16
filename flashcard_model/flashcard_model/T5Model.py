@@ -13,6 +13,7 @@ class T5Model(Model):
     def __init__(self):
         self.tokenizer = AutoTokenizer.from_pretrained(T5_HUGGINGFACE_MODEL_NAME)
         self.model = AutoModelForSeq2SeqLM.from_pretrained(T5_HUGGINGFACE_MODEL_NAME)
+        self.model = self.model.to(TORCH_DEVICE)
 
     def model_forward(self, extracted_pages: List[Tuple[int, str, str, Image]]) -> List[Tuple[int, List[str]]]:
         result = []
