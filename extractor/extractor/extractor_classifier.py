@@ -26,7 +26,6 @@ class ExtractorClassifier:
         image = self.image_preprocessing(image)
         image = image.unsqueeze(dim=0)
         output_probabilities = self.model(image)
-        print(output_probabilities)
         _, prediction = torch.max(output_probabilities.data, 1)
         return prediction
 
