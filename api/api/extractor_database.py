@@ -1,9 +1,7 @@
 import os
 import pickle
 from typing import List, Tuple
-
 import fpdf
-from PIL.Image import Image
 from pymongo import MongoClient
 from gridfs import GridFS
 from fpdf import FPDF
