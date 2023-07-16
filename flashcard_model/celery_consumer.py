@@ -1,6 +1,7 @@
 from celery import Celery
 
 from constants import DEMO_MODEL_KEY, CHAT_GPT_MODEL_KEY, T5_MODEL_KEY, MODEL_KEYS
+from flashcard_model.T5Model import T5Model
 from flashcard_model.database_functions import load_extracted_pages, set_document_to_failed
 from flashcard_model.ChatGPTModel import ChatGPTModel
 from flashcard_model.DemoModel import DemoModel
@@ -23,7 +24,7 @@ def generate_flashcard(extraction_result):
     model_functions = {
         DEMO_MODEL_KEY: DemoModel,
         CHAT_GPT_MODEL_KEY: ChatGPTModel,
-        T5_MODEL_KEY: None  # Replace "None" with the actual T5Model class once implemented
+        T5_MODEL_KEY: T5Model
     }
 
     if model_name in MODEL_KEYS:

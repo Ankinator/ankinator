@@ -32,7 +32,7 @@ class User(BaseModel):
     email: str | None = None
     full_name: str | None = None
     disabled: bool | None = None
-    # dict[document_id, dict[model_name, List[Tuple[page_number, list of questions]]]]
+    # dict[document_id, dict[model_name, List[Tuple[page_number, list of questions]] | model_name]]
     model_results: dict[str, Union[dict[str, Union[List[Tuple[int, List[str]]] | str]] | None | str]] = {}
 
 
