@@ -133,3 +133,4 @@ dmypy.json
 .DS_STORE
 
 extractor/demo_data
+extractor/model_weights
