@@ -22,11 +22,12 @@ class T5Model(Model):
         return result
 
     def generate_question(self, text):
-        tokenized_input = self.tokenizer.tokenize(text, return_tensors="pt", truncation=True, padding=True)
-        print(tokenized_input)
+        text = "Generate a question for this text: " + text
+        tokenized_input = self.tokenizer.encode(text, return_tensors="pt", truncation=True, padding=True)
         tokenized_input = tokenized_input.to(TORCH_DEVICE)
 
         with torch.no_grad():
-            output = self.model(**tokenized_input)
+            output = self.model.generate(tokenized_input)
+            question = self.tokenizer.decode(output[0], skip_special_tokens=True)
 
-        return output
+        return question
