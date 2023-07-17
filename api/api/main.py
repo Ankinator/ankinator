@@ -81,7 +81,9 @@ async def get_flashcard_result_document(document_id: str,
         pdf_blob = pdf_document.output(dest='S')
         pdf_base64 = base64.b64encode(pdf_blob).decode('utf-8')
 
-        return {pdf_base64}
+        response = Response(content=pdf_base64, media_type="application/pdf")
+        response.headers["Content-Disposition"] = f"inline; filename=result_document_{document_id}.pdf"
+        return response
 
 
 @app.post("/login", response_model=Token)
