@@ -11,6 +11,8 @@ from api.user_authentication import Token, authenticate_user, ACCESS_TOKEN_EXPIR
 from api.user_database import User, create_model_result_placeholder_for_user, get_user
 from api.extractor_database import load_processed_pdf_document
 
+import base64
+
 celery_app = Celery('api')
 
 app = FastAPI(title="Ankinator", description="Ankinator API", version="0.1", max_request_size=52428800)
@@ -76,9 +78,10 @@ async def get_flashcard_result_document(document_id: str,
     else:
         pdf_document = load_processed_pdf_document(document_id)
 
-        response = Response(content=bytes(pdf_document.output()), media_type="application/pdf")
-        response.headers["Content-Disposition"] = f"attachment; filename=result_document_{document_id}.pdf"
-        return response
+        pdf_blob = pdf_document.output(dest='S')
+        pdf_base64 = base64.b64encode(pdf_blob).decode('utf-8')
+
+        return {pdf_base64}
 
 
 @app.post("/login", response_model=Token)
