@@ -1,9 +1,10 @@
-from PIL import Image
+from PIL.Image import Image
 from typing import List, Tuple
 
 from flashcard_model.Model import Model
 from constants import TORCH_DEVICE
 from transformers import VisionEncoderDecoderModel, ViTImageProcessor, AutoTokenizer
+import torch
 
 
 class VitGPT2Model(Model):
@@ -21,7 +22,7 @@ class VitGPT2Model(Model):
         gen_kwargs = {"max_length": self.max_length, "num_beams": self.num_beams}
 
         images = [image for _, _, _, image in extracted_pages]
-        pixel_values = self.feature_extractor(images=images, return_tensor="pt").pixel_values
+        pixel_values = self.feature_extractor(images=images, return_tensors="pt").pixel_values
         pixel_values = pixel_values.to(self.device)
 
         output_ids = self.model.generate(pixel_values, **gen_kwargs)
