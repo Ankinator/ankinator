@@ -4,7 +4,6 @@ from typing import List, Tuple
 from flashcard_model.Model import Model
 from constants import TORCH_DEVICE
 from transformers import VisionEncoderDecoderModel, ViTImageProcessor, AutoTokenizer
-import torch
 
 
 class VitGPT2Model(Model):
