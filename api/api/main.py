@@ -9,9 +9,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 from api.user_authentication import Token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, \
     create_access_token, get_current_active_user, create_session_user
 from api.user_database import User, create_model_result_placeholder_for_user, get_user
-from api.extractor_database import load_processed_pdf_document
+from api.extractor_database import load_processed_pdf_document, load_processed_data
 
 import base64
+import genanki
 
 celery_app = Celery('api')
 
@@ -115,3 +116,52 @@ async def read_users_me(
         current_user: Annotated[User, Depends(get_current_active_user)]
 ):
     return current_user
+
+@app.post("/create_flashcards", response_model=str)
+async def create_flashcards_for_pdf(document_id: str, questions: List[List[str]] ):
+    pdf_data = load_processed_data(document_id)
+    flashcards = []
+
+    for index, question in enumerate(questions):
+        front = question
+        #Wie bekomme ich hier das image?
+        back = pdf_data[index]
+
+        model_id = genanki.guid()
+        note_id = genanki.guid()
+
+        model = genanki.Model(
+            model_id,
+            'Simple Model',
+            fields=[
+                {'name': 'Front'},
+                {'name': 'Back'},
+            ],
+            templates=[
+                {
+                    'name': 'Card 1',
+                    'qfmt': '{{Front}}',
+                    'afmt': '{{FrontSide}}<hr id="answer">{{Back}}',
+                },
+            ]
+        )
+
+        note = genanki.Note(
+            note_id,
+            model=model,
+            fields=[front, back]
+        )
+
+        flashcards.append(note)
+
+    deck_id = genanki.guid()
+    deck = genanki.Deck(deck_id, 'Flashcards Deck')
+
+    for flashcard in flashcards:
+        deck.add_note(flashcard)
+
+    package = genanki.Package([model, deck])
+
+    apkg_content = package.write_to_bytes()
+
+    return base64.b64encode(apkg_content).decode('utf-8')
