@@ -1,13 +1,10 @@
-import os
 from typing import List, Tuple, Union
-from pymongo import MongoClient
 from pydantic import BaseModel
 import uuid
 import time
+from api.database_util import get_mongo_db_database
 
-mongo_url = os.getenv('MONGO_URL')
-client = MongoClient(mongo_url)
-database = client["ankinator_database"]
+database = get_mongo_db_database()
 
 demo_user = {
     "username": "testuser",
@@ -32,8 +29,9 @@ class User(BaseModel):
     email: str | None = None
     full_name: str | None = None
     disabled: bool | None = None
-    # dict[document_id, dict[model_name, List[Tuple[page_number, list of questions]] | model_name]]
-    model_results: dict[str, Union[dict[str, Union[List[Tuple[int, List[str]]] | str]] | None | str]] = {}
+    # dict[document_id, dict[model_name, List[Tuple[page_number, list of questions]] | model_name | list of pages]]
+    model_results: dict[
+        str, Union[dict[str, Union[List[Tuple[int, List[str]]] | str | List[int] | None]] | None | str]] = {}
 
 
 class UserInDB(User):
@@ -46,15 +44,31 @@ def get_user(username: str):
         return UserInDB(**user)
 
 
-def create_model_result_placeholder_for_user(username: str) -> str:
+def create_model_result_placeholder_for_user(username: str, pdf_document_id: str) -> str:
     user = database["user"].find_one({"username": username})
     if user is not None:
         user = UserInDB(**user)
-        document_id = str(uuid.uuid4())
-        user.model_results[document_id] = None
+        result_id = str(uuid.uuid4())
+        user.model_results[result_id] = {
+            "model_name": None,
+            "pdf_document_id": pdf_document_id,
+            "pages": None,
+            "timestamp": None,
+            "model_result": None
+        }
         save_user(user)
-        return document_id
+        return result_id
 
 
 def save_user(user: UserInDB):
     database["user"].update_one(filter={"username": user.username}, update={"$set": user.dict()}, upsert=True)
+
+
+def update_user_result(result_id: str, pages: List[int] = None, model_result=None):
+    user = database["user"].find_one({"model_results." + result_id: {"$exists": True}})
+    if user is not None:
+        if pages:
+            user["model_results"][result_id]["pages"] = pages
+        if model_result:
+            user["model_results"][result_id]["model_result"] = model_result
+        database["user"].update_one({"username": user["username"]}, {"$set": user})

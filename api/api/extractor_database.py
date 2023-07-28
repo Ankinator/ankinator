@@ -1,16 +1,13 @@
-import os
 import pickle
 from typing import List, Tuple
 import fpdf
-from pymongo import MongoClient
 from gridfs import GridFS
 from fpdf import FPDF
 import PIL
 
-mongo_url = os.getenv('MONGO_URL')
-client = MongoClient(mongo_url)
-database = client["ankinator_database"]
+from api.database_util import get_mongo_db_database
 
+database = get_mongo_db_database()
 grid_fs = GridFS(database)
 
 

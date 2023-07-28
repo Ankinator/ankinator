@@ -1,3 +1,5 @@
+import io
+
 from fastapi import UploadFile, Depends, FastAPI, HTTPException, status, Body, Response
 from fastapi.middleware.cors import CORSMiddleware
 from celery import Celery
@@ -5,11 +7,13 @@ from datetime import timedelta
 from typing import Annotated, List
 
 from fastapi.security import OAuth2PasswordRequestForm
+from pypdfium2 import PdfDocument
 
+from api.pdf_document_database import save_pdf_file, load_pdf_file, get_all_documents_for_user
 from api.user_authentication import Token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, \
     create_access_token, get_current_active_user, create_session_user
-from api.user_database import User, create_model_result_placeholder_for_user, get_user
 from api.extractor_database import load_processed_pdf_document, load_processed_data
+from api.user_database import User, create_model_result_placeholder_for_user, get_user, update_user_result
 
 import base64
 import genanki
@@ -38,59 +42,111 @@ async def root():
 
 
 @app.post("/uploadpdf")
-async def upload_pdf_file(file: UploadFile, current_user: Annotated[User, Depends(get_current_active_user)],
-                          pages: List[str] = Body(None), model: str = Body(None), domain: str = Body(None)):
-    pdf_content = await file.read()
-    document_id = create_model_result_placeholder_for_user(current_user.username)
+async def upload_pdf_document(file: UploadFile, current_user: Annotated[User, Depends(get_current_active_user)]):
+    pdf_file = await file.read()
+    pdf_save_status = save_pdf_file(pdf_file, file.filename, current_user.username)
+    return pdf_save_status
 
+
+@app.post("/generation/extraction/classifier/start")
+async def start_extraction_classifier(current_user: Annotated[User, Depends(get_current_active_user)],
+                                      pdf_document_id: str):
+    result_id = create_model_result_placeholder_for_user(current_user.username, pdf_document_id)
+    pdf_file, _ = load_pdf_file(pdf_document_id)
+    document = {
+        "pdf_document_id": pdf_document_id,
+        "result_id": result_id,
+        "pdf_file": pdf_file
+    }
+    celery_app.send_task("classify_pdf_document_page_relevance", queue="extractor", routing_key="extract.task",
+                         kwargs={"document": document}, serializer="pickle")
+
+    return {"result_id": result_id}
+
+
+@app.post("/generation/questions/start")
+async def start_flashcard_generation(current_user: Annotated[User, Depends(get_current_active_user)],
+                                     pdf_document_id: str = Body(...),
+                                     result_id: str = Body(None), pages: List[str] = Body(None),
+                                     model: str = Body(None), domain: str = Body(None),
+                                     ):
     if pages is not None and (len(pages) == 1):  # Required for swagger
         pages = [item.strip() for item in pages[0].split(",")]
 
     if pages is not None and len(pages) > 0:
         pages = [int(i) for i in pages]
 
+    pdf_file, _ = load_pdf_file(pdf_document_id)
+
+    if result_id is None:
+        result_id = create_model_result_placeholder_for_user(current_user.username, pdf_document_id)
+        pages = list(range(1, len(PdfDocument(pdf_file)) + 1))
+        update_user_result(result_id, pages=pages, model_result="PENDING")
+    else:
+        if pages is None:
+            pages = get_user(current_user.username).model_results[result_id].pages
+            update_user_result(result_id, model_result="PENDING")
+        else:
+            update_user_result(result_id, pages=pages, model_result="PENDING")
+
     document = {
-        "document_id": document_id,
-        "pdf_file": pdf_content,
+        "pdf_document_id": pdf_document_id,
+        "result_id": result_id,
+        "pdf_file": pdf_file,
         "pages": pages,
         "model": model,
         "domain": domain
     }
     celery_app.send_task("extract_text_from_pdf", queue="extractor", routing_key="extract.task",
                          kwargs={"document": document}, serializer="pickle")
-    return {"document_id": document_id}
+    return {"result_id": result_id}
 
 
-@app.get("/result")
-async def get_flashcard_results(document_id: str, current_user: Annotated[User, Depends(get_current_active_user)]):
+@app.get("/generation/result")
+async def get_flashcard_results(result_id: str, current_user: Annotated[User, Depends(get_current_active_user)]):
     db_user = get_user(current_user.username)
-    if db_user.model_results[document_id] is None:
+    if db_user.model_results[result_id] is None:
         return {"model_result": "PENDING"}
     else:
-        return db_user.model_results[document_id]
+        return db_user.model_results[result_id]
 
 
-@app.get("/resultpdf")
-async def get_flashcard_result_document(document_id: str,
-                                        current_user: Annotated[User, Depends(get_current_active_user)]):
+@app.get("/generation/result/pdf")
+async def get_flashcard_result_pdf(result_id: str, current_user: Annotated[User, Depends(get_current_active_user)]):
     db_user = get_user(current_user.username)
-    if db_user.model_results[document_id] is None:
+    if db_user.model_results[result_id] is None:
         return {"model_result": "PENDING"}
     else:
-        pdf_document = load_processed_pdf_document(document_id)
+        if db_user.model_results[result_id]["model_result"] is None:
+            return {"model_result": "PENDING"}
+        pdf_document = load_processed_pdf_document(result_id)
 
         pdf_blob = pdf_document.output(dest='S')
         pdf_base64 = base64.b64encode(pdf_blob).decode('utf-8')
 
         response = Response(content=pdf_base64, media_type="application/pdf")
-        response.headers["Content-Disposition"] = f"inline; filename=result_document_{document_id}.pdf"
+        response.headers["Content-Disposition"] = f"inline; filename=result_document_{result_id}.pdf"
         return response
 
 
+@app.get("/pdf")
+async def get_pdf_document(pdf_document_id: str, current_user: Annotated[User, Depends(get_current_active_user)]):
+    pdf_file, pdf_document_name = load_pdf_file(pdf_document_id)
+    pdf_document = PdfDocument(pdf_file)
+
+    pdf_bytes = io.BytesIO()
+    pdf_document.save(pdf_bytes)
+    pdf_bytes.seek(0)
+
+    pdf_base64 = base64.b64encode(pdf_bytes.read()).decode('utf-8')
+
+    response = Response(content=pdf_base64, media_type="application/pdf")
+    response.headers["Content-Disposition"] = f"inline; {pdf_document_name}"
+    return response
+
+
 @app.post("/login", response_model=Token)
-async def login_for_access_token(
-        form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
-):
+async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -117,14 +173,15 @@ async def read_users_me(
 ):
     return current_user
 
+
 @app.post("/create_flashcards", response_model=str)
-async def create_flashcards_for_pdf(document_id: str, questions: List[List[str]] ):
+async def create_flashcards_for_pdf(document_id: str, questions: List[List[str]]):
     pdf_data = load_processed_data(document_id)
     flashcards = []
 
     for index, question in enumerate(questions):
         front = question
-        #Wie bekomme ich hier das image?
+        # Wie bekomme ich hier das image?
         back = pdf_data[index]
 
         model_id = genanki.guid()
@@ -165,3 +222,10 @@ async def create_flashcards_for_pdf(document_id: str, questions: List[List[str]]
     apkg_content = package.write_to_bytes()
 
     return base64.b64encode(apkg_content).decode('utf-8')
+
+
+@app.get("/users/me/pdfs")
+async def read_user_pdf_documents(
+        current_user: Annotated[User, Depends(get_current_active_user)]
+):
+    return get_all_documents_for_user(current_user.username)
