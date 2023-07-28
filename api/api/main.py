@@ -1,21 +1,20 @@
 import io
 
 from fastapi import UploadFile, Depends, FastAPI, HTTPException, status, Body, Response
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from celery import Celery
 from datetime import timedelta
 from typing import Annotated, List
-
-from fastapi.security import OAuth2PasswordRequestForm
+import base64
 from pypdfium2 import PdfDocument
 
+from api.anki_export import create_anki_export
 from api.pdf_document_database import save_pdf_file, load_pdf_file, get_all_documents_for_user
 from api.user_authentication import Token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, \
     create_access_token, get_current_active_user, create_session_user
-from api.user_database import User, create_model_result_placeholder_for_user, get_user, update_user_result
 from api.extractor_database import load_processed_pdf_document
-
-import base64
+from api.user_database import User, create_model_result_placeholder_for_user, get_user, update_user_result
 
 celery_app = Celery('api')
 
@@ -171,6 +170,16 @@ async def read_users_me(
         current_user: Annotated[User, Depends(get_current_active_user)]
 ):
     return current_user
+
+
+@app.post("/create_flashcards")
+async def create_flashcards_for_pdf(current_user: Annotated[User, Depends(get_current_active_user)],
+                                    result_id: str = Body(...), questions: List[str] = Body(...)):
+    anki_export = create_anki_export(current_user.username, result_id, questions)
+
+    response = Response(content=anki_export, media_type="application/octet-stream")
+    response.headers["Content-Disposition"] = f"attachment; filename=deck_{result_id}.apkg"
+    return response
 
 
 @app.get("/users/me/pdfs")

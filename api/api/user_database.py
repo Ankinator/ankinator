@@ -7,9 +7,9 @@ from api.database_util import get_mongo_db_database
 database = get_mongo_db_database()
 
 demo_user = {
-    "username": "ankinator",
-    "full_name": "John Doe",
-    "email": "johndoe@example.com",
+    "username": "testuser",
+    "full_name": "Test User",
+    "email": "testuser@example.com",
     "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
     "disabled": False,
     "model_results": {}
@@ -17,7 +17,7 @@ demo_user = {
 
 time.sleep(1)
 
-existing_user = database["user"].find_one({"username": "ankinator"})
+existing_user = database["user"].find_one({"username": "testuser"})
 if existing_user is None:
     database["user"].insert_one(demo_user)
 
