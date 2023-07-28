@@ -25,10 +25,10 @@ def add_model_result_to_document(result_id: str, model_name: str, result: List[T
         database["user"].update_one({"username": user["username"]}, {"$set": user})
 
 
-def set_document_to_failed(document_id: str):
-    user = database["user"].find_one({"model_results." + document_id: {"$exists": True}})
+def set_result_to_failed(result_id: str):
+    user = database["user"].find_one({"model_results." + result_id: {"$exists": True}})
     if user is not None:
-        user["model_results"][document_id] = "FAILED"
+        user["model_results"][result_id]["model_result"] = "FAILED"
         database["user"].update_one({"username": user["username"]}, {"$set": user})
 
 
