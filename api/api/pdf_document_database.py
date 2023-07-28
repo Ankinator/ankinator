@@ -11,8 +11,9 @@ def save_pdf_file(pdf_file: bytes, pdf_document_name: str, username: str):
         existing_document = database["pdf_document"].find_one({'pdf_document_name': pdf_document_name})
         if existing_document:
             if existing_document["username"] == username:
-                print(f"Document with file name '{pdf_document_name}' already exists.")
-                return {f"Document with file name '{pdf_document_name}' already exists."}
+                print(f"Document with file name '{pdf_document_name}' and id {existing_document['pdf_document_id']} "
+                      f"already exists.")
+                return {"pdf_document_id": existing_document['pdf_document_id']}
 
         document = {
             "pdf_document_id": pdf_document_id,

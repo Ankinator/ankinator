@@ -2,7 +2,7 @@ from celery import Celery
 
 from constants import DEMO_MODEL_KEY, CHAT_GPT_MODEL_KEY, T5_MODEL_KEY, MODEL_KEYS, VIT_GPT2_MODEL_KEY
 from flashcard_model.T5Model import T5Model
-from flashcard_model.database_functions import load_extracted_pages, set_document_to_failed
+from flashcard_model.database_functions import load_extracted_pages, set_result_to_failed
 from flashcard_model.ChatGPTModel import ChatGPTModel
 from flashcard_model.DemoModel import DemoModel
 from flashcard_model.vit_gpt2 import VitGPT2Model
@@ -37,12 +37,12 @@ def generate_flashcard(extraction_result):
             model_instance(extraction_result['result_id'], model_name, extracted_pages)
             print(f"Document result -{extraction_result['result_id']}- flashcard generation finished")
         else:
-            set_document_to_failed(extraction_result['result_id'])
+            set_result_to_failed(extraction_result['result_id'])
             print(
                 f"Document result -{extraction_result['result_id']}- flashcard generation failed: {model_name} model "
                 f"not implemented")
     else:
-        set_document_to_failed(extraction_result['result_id'])
+        set_result_to_failed(extraction_result['result_id'])
         print(
             f"Document result -{extraction_result['result_id']}- flashcard generation failed: Model name not in "
             f"MODEL_KEYS list")
