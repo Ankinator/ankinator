@@ -111,7 +111,7 @@ async def get_flashcard_results(result_id: str, current_user: Annotated[User, De
 
 
 @app.get("/generation/result/pdf")
-async def get_flashcard_results(result_id: str, current_user: Annotated[User, Depends(get_current_active_user)]):
+async def get_flashcard_result_pdf(result_id: str, current_user: Annotated[User, Depends(get_current_active_user)]):
     db_user = get_user(current_user.username)
     if db_user.model_results[result_id] is None:
         return {"model_result": "PENDING"}
