@@ -1,26 +1,20 @@
 import io
-import os
-import random
-import shutil
 
 from fastapi import UploadFile, Depends, FastAPI, HTTPException, status, Body, Response
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from celery import Celery
 from datetime import timedelta
 from typing import Annotated, List
-
-from fastapi.security import OAuth2PasswordRequestForm
+import base64
 from pypdfium2 import PdfDocument
 
 from api.anki_export import create_anki_export
 from api.pdf_document_database import save_pdf_file, load_pdf_file, get_all_documents_for_user
 from api.user_authentication import Token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, \
     create_access_token, get_current_active_user, create_session_user
-from api.extractor_database import load_processed_pdf_document, load_processed_data
+from api.extractor_database import load_processed_pdf_document
 from api.user_database import User, create_model_result_placeholder_for_user, get_user, update_user_result
-
-import base64
-import genanki
 
 celery_app = Celery('api')
 
