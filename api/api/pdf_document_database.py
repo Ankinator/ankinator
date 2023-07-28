@@ -1,7 +1,5 @@
 import uuid
 
-from pypdfium2 import PdfDocument
-
 from api.database_util import get_mongo_db_database
 
 database = get_mongo_db_database()

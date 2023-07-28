@@ -45,6 +45,7 @@ class ExtractorClassifier:
                 pages.append(page_index)
         return pages
 
+
 # Use ResNet50 model for now
 class Resnet50Model(nn.Module):
     def __init__(self):

@@ -129,8 +129,7 @@ async def get_flashcard_results(result_id: str, current_user: Annotated[User, De
 
 
 @app.get("/pdf")
-async def get_pdf_document(pdf_document_id: str,
-                           current_user: Annotated[User, Depends(get_current_active_user)]):
+async def get_pdf_document(pdf_document_id: str, current_user: Annotated[User, Depends(get_current_active_user)]):
     pdf_file, pdf_document_name = load_pdf_file(pdf_document_id)
     pdf_document = PdfDocument(pdf_file)
 
@@ -146,9 +145,7 @@ async def get_pdf_document(pdf_document_id: str,
 
 
 @app.post("/login", response_model=Token)
-async def login_for_access_token(
-        form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
-):
+async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(

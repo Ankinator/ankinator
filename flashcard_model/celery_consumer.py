@@ -39,9 +39,10 @@ def generate_flashcard(extraction_result):
         else:
             set_document_to_failed(extraction_result['result_id'])
             print(
-                f"Document result -{extraction_result['result_id']}- flashcard generation failed: {model_name} model not "
-                f"implemented")
+                f"Document result -{extraction_result['result_id']}- flashcard generation failed: {model_name} model "
+                f"not implemented")
     else:
         set_document_to_failed(extraction_result['result_id'])
-        print(f"Document result -{extraction_result['result_id']}- flashcard generation failed: Model name not in MODEL_KEYS "
-              f"list")
+        print(
+            f"Document result -{extraction_result['result_id']}- flashcard generation failed: Model name not in "
+            f"MODEL_KEYS list")
