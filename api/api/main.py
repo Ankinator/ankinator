@@ -12,6 +12,7 @@ from typing import Annotated, List
 from fastapi.security import OAuth2PasswordRequestForm
 from pypdfium2 import PdfDocument
 
+from api.anki_export import create_anki_export
 from api.pdf_document_database import save_pdf_file, load_pdf_file, get_all_documents_for_user
 from api.user_authentication import Token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, \
     create_access_token, get_current_active_user, create_session_user
@@ -179,52 +180,11 @@ async def read_users_me(
 
 @app.post("/create_flashcards")
 async def create_flashcards_for_pdf(current_user: Annotated[User, Depends(get_current_active_user)],
-                                    result_id: str = Body(...), questions: List[str] = Body(...),
-                                    deck_name: str = Body(...)):
-    processed_data = load_processed_data(result_id)
-    flashcards = []
+                                    result_id: str = Body(...), questions: List[str] = Body(...)):
+    anki_export = create_anki_export(current_user.username, result_id, questions)
 
-    for index, question in enumerate(questions, 0):
-        back_image = processed_data[index][3]
-        buffered = io.BytesIO()
-        back_image.save(buffered, format="PNG")
-        back_image_encoded = base64.b64encode(buffered.getvalue()).decode("utf-8")
-
-        model_id = random.randrange(1 << 30, 1 << 31)
-        new_model = genanki.Model(
-            model_id,
-            'Simple Model',
-            fields=[
-                {'name': 'Question'},
-                {'name': 'Image'},
-            ],
-            templates=[
-                {
-                    'name': 'Card 1',
-                    'qfmt': '{{Question}}',
-                    'afmt': '{{Image}}'
-                }
-            ]
-        )
-
-        image_src_field = f'<img src="data:image/png;base64,{back_image_encoded}">'
-        my_note = genanki.Note(
-            model=new_model,
-            fields=[question, image_src_field]
-        )
-        flashcards.append(my_note)
-
-    deck_id = random.randrange(1 << 30, 1 << 31)
-    deck = genanki.Deck(deck_id, deck_name)
-    for flashcard in flashcards:
-        deck.add_note(flashcard)
-
-    package = genanki.Package(deck)
-    anki_package_bytes = io.BytesIO()
-    package.write_to_file(anki_package_bytes)
-
-    response = Response(content=anki_package_bytes.getvalue(), media_type="application/octet-stream")
-    response.headers["Content-Disposition"] = "attachment; filename=my_deck.apkg"
+    response = Response(content=anki_export, media_type="application/octet-stream")
+    response.headers["Content-Disposition"] = f"attachment; filename=deck_{result_id}.apkg"
     return response
 
 
