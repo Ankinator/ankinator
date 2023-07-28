@@ -1,4 +1,7 @@
 import io
+import os
+import random
+import shutil
 
 from fastapi import UploadFile, Depends, FastAPI, HTTPException, status, Body, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -174,54 +177,55 @@ async def read_users_me(
     return current_user
 
 
-@app.post("/create_flashcards", response_model=str)
-async def create_flashcards_for_pdf(document_id: str, questions: List[List[str]]):
-    pdf_data = load_processed_data(document_id)
+@app.post("/create_flashcards")
+async def create_flashcards_for_pdf(current_user: Annotated[User, Depends(get_current_active_user)],
+                                    result_id: str = Body(...), questions: List[str] = Body(...),
+                                    deck_name: str = Body(...)):
+    processed_data = load_processed_data(result_id)
     flashcards = []
 
-    for index, question in enumerate(questions):
-        front = question
-        # Wie bekomme ich hier das image?
-        back = pdf_data[index]
+    for index, question in enumerate(questions, 0):
+        back_image = processed_data[index][3]
+        buffered = io.BytesIO()
+        back_image.save(buffered, format="PNG")
+        back_image_encoded = base64.b64encode(buffered.getvalue()).decode("utf-8")
 
-        model_id = genanki.guid()
-        note_id = genanki.guid()
-
-        model = genanki.Model(
+        model_id = random.randrange(1 << 30, 1 << 31)
+        new_model = genanki.Model(
             model_id,
             'Simple Model',
             fields=[
-                {'name': 'Front'},
-                {'name': 'Back'},
+                {'name': 'Question'},
+                {'name': 'Image'},
             ],
             templates=[
                 {
                     'name': 'Card 1',
-                    'qfmt': '{{Front}}',
-                    'afmt': '{{FrontSide}}<hr id="answer">{{Back}}',
-                },
+                    'qfmt': '{{Question}}',
+                    'afmt': '{{Image}}'
+                }
             ]
         )
 
-        note = genanki.Note(
-            note_id,
-            model=model,
-            fields=[front, back]
+        image_src_field = f'<img src="data:image/png;base64,{back_image_encoded}">'
+        my_note = genanki.Note(
+            model=new_model,
+            fields=[question, image_src_field]
         )
+        flashcards.append(my_note)
 
-        flashcards.append(note)
-
-    deck_id = genanki.guid()
-    deck = genanki.Deck(deck_id, 'Flashcards Deck')
-
+    deck_id = random.randrange(1 << 30, 1 << 31)
+    deck = genanki.Deck(deck_id, deck_name)
     for flashcard in flashcards:
         deck.add_note(flashcard)
 
-    package = genanki.Package([model, deck])
+    package = genanki.Package(deck)
+    anki_package_bytes = io.BytesIO()
+    package.write_to_file(anki_package_bytes)
 
-    apkg_content = package.write_to_bytes()
-
-    return base64.b64encode(apkg_content).decode('utf-8')
+    response = Response(content=anki_package_bytes.getvalue(), media_type="application/octet-stream")
+    response.headers["Content-Disposition"] = "attachment; filename=my_deck.apkg"
+    return response
 
 
 @app.get("/users/me/pdfs")
