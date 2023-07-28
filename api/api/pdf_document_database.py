@@ -29,7 +29,15 @@ def save_pdf_file(pdf_file: bytes, pdf_document_name: str, username: str):
         print(f"Error: {e}")
         return {"PDF could not be saved"}
 
-#faee0e7b-4e7c-4ed8-85e1-51011e3f6941
+
 def load_pdf_file(pdf_document_id: str) -> (bytes, str):
     pdf_document = database["pdf_document"].find_one({'pdf_document_id': pdf_document_id})
     return pdf_document["pdf_document_file"], pdf_document["pdf_document_name"]
+
+
+def get_all_documents_for_user(username: str):
+    query = {"username": username}
+    projection = {"pdf_document_id": 1, "pdf_document_name": 1, "_id": 0}
+    result = database["pdf_document"].find(query, projection=projection)
+    result_list = [pdf_document for pdf_document in result]
+    return result_list

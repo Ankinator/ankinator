@@ -9,10 +9,10 @@ from typing import Annotated, List
 from fastapi.security import OAuth2PasswordRequestForm
 from pypdfium2 import PdfDocument
 
-from api.pdf_document_database import save_pdf_file, load_pdf_file
+from api.pdf_document_database import save_pdf_file, load_pdf_file, get_all_documents_for_user
 from api.user_authentication import Token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, \
     create_access_token, get_current_active_user, create_session_user
-from api.user_database import User, create_model_result_placeholder_for_user, get_user,  update_user_result
+from api.user_database import User, create_model_result_placeholder_for_user, get_user, update_user_result
 from api.extractor_database import load_processed_pdf_document
 
 import base64
@@ -174,3 +174,10 @@ async def read_users_me(
         current_user: Annotated[User, Depends(get_current_active_user)]
 ):
     return current_user
+
+
+@app.get("/users/me/pdfs")
+async def read_user_pdf_documents(
+        current_user: Annotated[User, Depends(get_current_active_user)]
+):
+    return get_all_documents_for_user(current_user.username)
