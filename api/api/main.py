@@ -82,7 +82,7 @@ async def start_flashcard_generation(current_user: Annotated[User, Depends(get_c
         update_user_result(result_id, pages=pages, model_result="PENDING")
     else:
         if pages is None:
-            pages = get_user(current_user.username).model_results[result_id].pages
+            pages = get_user(current_user.username).model_results[result_id]["pages"]
             update_user_result(result_id, model_result="PENDING")
         else:
             update_user_result(result_id, pages=pages, model_result="PENDING")
