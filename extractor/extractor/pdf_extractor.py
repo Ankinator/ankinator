@@ -4,8 +4,6 @@ import pytesseract
 from PIL.Image import Image
 from pypdfium2 import PdfDocument, PdfPage
 
-from extractor.extractor_classifier import ExtractorClassifier
-
 NUMBER_OF_TOKENS_TO_RUN_OCR = 20
 
 
@@ -22,18 +20,15 @@ def extract_text(pdf_file: SpooledTemporaryFile, pages_to_extract: List[int], la
     pdf_document = PdfDocument(pdf_file)
     extracted_pages = plain_pdf_extraction(pdf_document)
     extracted_content: List[Tuple[int, str, str, Image]] = []
-    extractor_classifier = ExtractorClassifier()
     for page_index, page_text in extracted_pages:
         if pages_to_extract is None or page_index in pages_to_extract:  # assuming first page is 0
             plain_extraction_text_length = len(page_text.split(" "))
             page_image = pdf_page_to_image(pdf_document.get_page(page_index - 1))
-            if pages_to_extract is not None or (
-                    pages_to_extract is None and extractor_classifier.is_page_relevant(page_image) == 0):
-                if plain_extraction_text_length < NUMBER_OF_TOKENS_TO_RUN_OCR:
-                    ocr_text = ocr_extraction(page_image, language=language)
-                    extracted_content.append((page_index, page_text, ocr_text, page_image))
-                else:
-                    extracted_content.append((page_index, page_text, "", page_image))
+            if plain_extraction_text_length < NUMBER_OF_TOKENS_TO_RUN_OCR:
+                ocr_text = ocr_extraction(page_image, language=language)
+                extracted_content.append((page_index, page_text, ocr_text, page_image))
+            else:
+                extracted_content.append((page_index, page_text, "", page_image))
     return extracted_content
 
 
