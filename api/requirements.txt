@@ -6,7 +6,7 @@ cryptography==41.0.1
 python-jose==3.3.0
 passlib[bcrypt]==1.7.4
 gunicorn==20.1.0
-pymongo==4.3.3
+pymongo==4.4.1
 fpdf2==2.7.4
 genanki==0.3.0
 pypdfium2==4.18.0
