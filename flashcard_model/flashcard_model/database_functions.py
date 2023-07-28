@@ -1,3 +1,4 @@
+import datetime
 import os
 import pickle
 from typing import List, Tuple
@@ -15,13 +16,12 @@ grid_fs = GridFS(database)
 
 # Add results to document with passed document_id
 # Results is as list of tuples. Each tuple contains the page number (int) and the generated questions (List[str])
-def add_model_result_to_document(document_id: str, model_name: str, result: List[Tuple[int, List[str]]]):
-    user = database["user"].find_one({"model_results." + document_id: {"$exists": True}})
+def add_model_result_to_document(result_id: str, model_name: str, result: List[Tuple[int, List[str]]]):
+    user = database["user"].find_one({"model_results." + result_id: {"$exists": True}})
     if user is not None:
-        user["model_results"][document_id] = {
-            "model_name": model_name,
-            "model_result": result
-        }
+        user["model_results"][result_id]["model_name"] = model_name
+        user["model_results"][result_id]["timestamp"] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        user["model_results"][result_id]["model_result"] = result
         database["user"].update_one({"username": user["username"]}, {"$set": user})
 
 

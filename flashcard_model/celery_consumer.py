@@ -15,12 +15,12 @@ app.conf.accept_content = ["json", "pickle"]
 
 @app.task(name="generate_flashcards")
 def generate_flashcard(extraction_result):
-    extracted_pages = load_extracted_pages(extraction_result["document_id"])
+    extracted_pages = load_extracted_pages(extraction_result["result_id"])
     model_name = extraction_result["model"]
 
     if model_name is None:  # Use Demo model if no model name is provided
         model_name = DEMO_MODEL_KEY
-        print(f"Document {extraction_result['document_id']} No model name provided. Demo model will be used")
+        print(f"Document result -{extraction_result['result_id']}- No model name provided. Demo model will be used")
 
     model_functions = {
         DEMO_MODEL_KEY: DemoModel,
@@ -30,18 +30,19 @@ def generate_flashcard(extraction_result):
     }
 
     if model_name in MODEL_KEYS:
-        print(f"Document {extraction_result['document_id']} {model_name} model used")
+        print(f"Document result - {extraction_result['result_id']}- {model_name} model used")
         model_function = model_functions.get(model_name)
         if model_function:
             model_instance = model_function()
-            model_instance(extraction_result['document_id'], model_name, extracted_pages)
-            print(f"Document {extraction_result['document_id']} flashcard generation finished")
+            model_instance(extraction_result['result_id'], model_name, extracted_pages)
+            print(f"Document result -{extraction_result['result_id']}- flashcard generation finished")
         else:
-            set_document_to_failed(extraction_result['document_id'])
+            set_document_to_failed(extraction_result['result_id'])
             print(
-                f"Document {extraction_result['document_id']} flashcard generation failed: {model_name} model not "
-                f"implemented")
+                f"Document result -{extraction_result['result_id']}- flashcard generation failed: {model_name} model "
+                f"not implemented")
     else:
-        set_document_to_failed(extraction_result['document_id'])
-        print(f"Document {extraction_result['document_id']} flashcard generation failed: Model name not in MODEL_KEYS "
-              f"list")
+        set_document_to_failed(extraction_result['result_id'])
+        print(
+            f"Document result -{extraction_result['result_id']}- flashcard generation failed: Model name not in "
+            f"MODEL_KEYS list")
