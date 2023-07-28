@@ -26,7 +26,7 @@ def create_anki_export(username: str, result_id: str, questions: List[str]) -> b
         model_id = random.randrange(1 << 30, 1 << 31)
         new_model = genanki.Model(
             model_id,
-            'Ankinator Model',
+            f'Ankinator Model {model_id}',
             fields=[
                 {'name': 'Question'},
                 {'name': 'Image'},
@@ -53,7 +53,7 @@ def create_anki_export(username: str, result_id: str, questions: List[str]) -> b
     pdf_document_id = db_user.model_results[result_id]["pdf_document_id"]
     _, pdf_document_name = load_pdf_file(pdf_document_id)
 
-    deck = genanki.Deck(deck_id, pdf_document_id + " flashcards")
+    deck = genanki.Deck(deck_id, pdf_document_name + " flashcards")
     for flashcard in flashcards:
         deck.add_note(flashcard)
 
