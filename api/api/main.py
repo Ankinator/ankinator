@@ -115,7 +115,8 @@ async def get_flashcard_result_pdf(result_id: str, current_user: Annotated[User,
     if db_user.model_results[result_id] is None:
         return {"model_result": "PENDING"}
     else:
-        if db_user.model_results[result_id]["model_result"] is None:
+        if db_user.model_results[result_id]["model_result"] is None or \
+                db_user.model_results[result_id]["model_result"] == "PENDING":
             return {"model_result": "PENDING"}
         pdf_document = load_processed_pdf_document(result_id)
 
@@ -169,7 +170,13 @@ async def random_user_session():
 async def read_users_me(
         current_user: Annotated[User, Depends(get_current_active_user)]
 ):
-    return current_user
+    db_user = get_user(current_user.username)
+    all_pdf_documents = get_all_documents_for_user(current_user.username)
+    for result_id in db_user.model_results:
+        pdf_document_name = next((pdf["pdf_document_name"] for pdf in all_pdf_documents if
+                                  pdf["pdf_document_id"] == db_user.model_results[result_id]["pdf_document_id"]), None)
+        db_user.model_results[result_id]["pdf_document_name"] = pdf_document_name
+    return db_user
 
 
 @app.post("/create_flashcards")
