@@ -78,7 +78,8 @@ async def start_flashcard_generation(current_user: Annotated[User, Depends(get_c
 
     if result_id is None:
         result_id = create_model_result_placeholder_for_user(current_user.username, pdf_document_id)
-        pages = list(range(1, len(PdfDocument(pdf_file)) + 1))
+        if pages is None:
+            pages = list(range(1, len(PdfDocument(pdf_file)) + 1))
         update_user_result(result_id, pages=pages, model_result="PENDING")
     else:
         if pages is None:
@@ -172,10 +173,17 @@ async def read_users_me(
 ):
     db_user = get_user(current_user.username)
     all_pdf_documents = get_all_documents_for_user(current_user.username)
+    results_to_remove = []
     for result_id in db_user.model_results:
         pdf_document_name = next((pdf["pdf_document_name"] for pdf in all_pdf_documents if
                                   pdf["pdf_document_id"] == db_user.model_results[result_id]["pdf_document_id"]), None)
         db_user.model_results[result_id]["pdf_document_name"] = pdf_document_name
+
+        if db_user.model_results[result_id]["model_result"] is None or \
+                db_user.model_results[result_id]["model_result"] == "PENDING":
+            results_to_remove.append(result_id)
+    for result_id in results_to_remove:
+        db_user.model_results.pop(result_id)
     return db_user
 
 
