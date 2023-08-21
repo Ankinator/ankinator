@@ -26,6 +26,7 @@ class ChatGPTModel(Model):
                 try:
                     generated_question = self.chat_gpt(
                         "Generate a question in a flashcard style for the following content: " + card_back)
+                    break
                 except Exception:
                     time.sleep(1)
                     continue
