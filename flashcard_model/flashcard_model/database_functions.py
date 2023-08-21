@@ -20,7 +20,8 @@ def add_model_result_to_document(result_id: str, model_name: str, result: List[T
     user = database["user"].find_one({"model_results." + result_id: {"$exists": True}})
     if user is not None:
         user["model_results"][result_id]["model_name"] = model_name
-        user["model_results"][result_id]["timestamp"] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        current_time = datetime.datetime.now() + datetime.timedelta(hours=2)
+        user["model_results"][result_id]["timestamp"] = current_time.strftime('%Y-%m-%d %H:%M:%S')
         user["model_results"][result_id]["model_result"] = result
         database["user"].update_one({"username": user["username"]}, {"$set": user})
 
