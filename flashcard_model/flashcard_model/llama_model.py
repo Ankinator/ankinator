@@ -21,7 +21,7 @@ def prompt_gen(text):
     return prompt
 
 
-class T5Model(Model):
+class LLAMAModel(Model):
 
     def __init__(self):
         self.tokenizer = AutoTokenizer.from_pretrained(LLAMA_HUGGINGFACE_MODEL_NAME)
