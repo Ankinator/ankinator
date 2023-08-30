@@ -2,7 +2,7 @@ from tempfile import SpooledTemporaryFile
 from typing import List
 
 from pypdfium2 import PdfDocument
-from torchvision.models import resnet50
+from torchvision.models import efficientnet_v2_m
 import torch
 import torch.nn as nn
 import PIL
@@ -14,7 +14,7 @@ from extractor.constants import EXTRACTOR_CLASSIFIER_MODEL_PATH
 
 class ExtractorClassifier:
     def __init__(self):
-        self.model = Resnet50Model()
+        self.model = EfficientNetModel()
         self.model.load_state_dict(torch.load(EXTRACTOR_CLASSIFIER_MODEL_PATH, map_location=torch.device("cpu")))
         self.model.eval()
         self.to_tensor = transforms.ToTensor()
@@ -46,16 +46,16 @@ class ExtractorClassifier:
         return pages
 
 
-# Use ResNet50 model for now
-class Resnet50Model(nn.Module):
+class EfficientNetModel(nn.Module):
     def __init__(self):
-        super(Resnet50Model, self).__init__()
-        self.resnet_model = resnet50()
-        num_features = self.resnet_model.fc.in_features
-        self.resnet_model.fc = nn.Linear(num_features, 2)
+        super(EfficientNetModel, self).__init__()
+        self.efficientnet_model = efficientnet_v2_m()
+        num_features = self.efficientnet_model.classifier[1].in_features
+        new_classifier_layer = torch.nn.Linear(num_features, 2)
+        self.efficientnet_model.classifier[1] = new_classifier_layer
 
     def forward(self, x):
-        output_logits = self.resnet_model(x)
+        output_logits = self.efficientnet_model(x)
         output_probabilities = F.softmax(output_logits, dim=1)
         print(output_probabilities)
         return output_probabilities

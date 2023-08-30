@@ -12,15 +12,11 @@ import openai
 
 class ChatGPTModel(Model):
     def model_forward(self, extracted_pages: List[Tuple[int, str, str, Image]]) -> List[Tuple[int, List[str]]]:
-        # Implement chatgpt model here
         load_dotenv()
         openai.api_key = os.getenv("OPENAI-API-KEY")
         results = []
         for i in range(3):
             card_back = extracted_pages[i][1]  # storing the input as back of the card
-            #print("card back = " + card_back)
-            #print("extracted page number = " + str(extracted_pages[i][0]))
-
             generated_question = "Open AI services not available"
             for i in range(3):
                 try:
@@ -43,4 +39,3 @@ class ChatGPTModel(Model):
             ]
         )
         return completion.choices[0].message.content
-
