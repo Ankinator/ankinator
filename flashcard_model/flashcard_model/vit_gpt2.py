@@ -2,16 +2,15 @@ from PIL.Image import Image
 from typing import List, Tuple
 
 from flashcard_model.Model import Model
-from constants import TORCH_DEVICE
+from constants import TORCH_DEVICE, VIT_GPT2_MODEL_CONFIG
 from transformers import VisionEncoderDecoderModel, ViTImageProcessor, AutoTokenizer
 
 
 class VitGPT2Model(Model):
 
     def __init__(self, max_length=16, num_beams=4):
-        # TODO: Use Fine-Tuned Weights
-        self.model = VisionEncoderDecoderModel.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
-        self.feature_extractor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+        self.model = VisionEncoderDecoderModel.from_pretrained(VIT_GPT2_MODEL_CONFIG)
+        self.feature_extractor = ViTImageProcessor.from_pretrained(VIT_GPT2_MODEL_CONFIG)
         self.tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
         self.max_length = max_length
         self.num_beams = num_beams

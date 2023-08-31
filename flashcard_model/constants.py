@@ -8,3 +8,4 @@ MODEL_KEYS = [CHAT_GPT_MODEL_KEY, DEMO_MODEL_KEY, T5_MODEL_KEY, VIT_GPT2_MODEL_K
 TORCH_DEVICE = "cpu"
 T5_HUGGINGFACE_MODEL_NAME = "prnv13/flan-t5-base-master-final"
 LLAMA_HUGGINGFACE_MODEL_NAME = "prnv13/llama-7-master"
+VIT_GPT2_MODEL_CONFIG = "model_weights/vit-gpt2-gold-standard-v2"

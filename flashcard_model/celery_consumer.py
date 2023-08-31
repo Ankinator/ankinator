@@ -1,10 +1,11 @@
 from celery import Celery
 
-from constants import DEMO_MODEL_KEY, CHAT_GPT_MODEL_KEY, T5_MODEL_KEY, MODEL_KEYS, VIT_GPT2_MODEL_KEY
+from constants import DEMO_MODEL_KEY, CHAT_GPT_MODEL_KEY, T5_MODEL_KEY, MODEL_KEYS, VIT_GPT2_MODEL_KEY, LLAMA_MODEL_KEY
 from flashcard_model.T5Model import T5Model
 from flashcard_model.database_functions import load_extracted_pages, set_result_to_failed
 from flashcard_model.ChatGPTModel import ChatGPTModel
 from flashcard_model.DemoModel import DemoModel
+from flashcard_model.llama_model import LLAMAModel
 from flashcard_model.vit_gpt2 import VitGPT2Model
 
 app = Celery('flashcard_model')
@@ -27,6 +28,7 @@ def generate_flashcard(extraction_result):
         CHAT_GPT_MODEL_KEY: ChatGPTModel,
         T5_MODEL_KEY: T5Model,
         VIT_GPT2_MODEL_KEY: VitGPT2Model,
+        LLAMA_MODEL_KEY: LLAMAModel
     }
 
     if model_name in MODEL_KEYS:
