@@ -11,4 +11,4 @@ This repository contains the Ankinator backend. To run Ankinator, follow these s
 
 The following models are available for generating flashcards: ChatGPT, T5, LLaMA and VitGPT2.
 
-IMPORTANT: The LLAama model requires a lot of memory to run and if there is not enough memory the process will stop. 
+IMPORTANT: The LLaMA model requires a lot of memory to run and if there is not enough memory the process will stop. 
